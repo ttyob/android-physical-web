@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Android 设备控制</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="control.css">
+</head>
+<body>
+    <main class="workspace">
+        <div class="device-stage">
+          <div class="phone-shell">
+            <header class="device-local-header">
+                <div class="device-local-title">
+                    <strong id="device-identity">未选择设备</strong>
+                    <input id="device-name-input" type="text" maxlength="40" aria-label="设备显示名称" hidden>
+                    <span>-</span>
+                    <code id="device-serial">--</code>
+                    <button type="button" id="rename-device" title="修改设备显示名称">修改</button>
+                    <button type="button" id="close-device-frame" title="关闭设备" aria-label="关闭设备"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                </div>
+                <div class="device-local-status" aria-live="polite">
+                    <div class="connection" role="status">
+                        <span id="status-dot" class="status-dot"></span>
+                        <span id="status-text">正在连接</span>
+                    </div>
+                    <i>/</i>
+                    <span>CPU <b id="cpu-usage">--</b></span>
+                    <i>/</i>
+                    <span>内存 <b id="memory-usage">--</b></span>
+                    <span id="gpu-metric" class="hidden-gpu-metric" title="正在探测 GPU">GPU <b id="gpu-usage">--</b></span>
+                </div>
+            </header>
+            <div id="screen-frame" class="screen-frame" tabindex="0" aria-label="安卓屏幕">
+                <video id="player" autoplay muted playsinline></video>
+                <div id="loading" class="loading">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span id="loading-text">正在启动画面</span>
+                </div>
+            </div>
+
+            <aside class="side-controls" aria-label="手机侧键">
+                <div class="volume-rocker" role="group" aria-label="音量">
+                    <button type="button" data-keycode="24" title="提高音量" aria-label="提高音量">&#43;</button>
+                    <button type="button" data-keycode="25" title="降低音量" aria-label="降低音量">&#8722;</button>
+                </div>
+                <button type="button" class="power" data-keycode="26" title="电源" aria-label="电源"></button>
+            </aside>
+
+            <nav class="bottom-controls" aria-label="安卓导航">
+                <button type="button" data-keycode="4" title="返回" aria-label="返回">&#8592;</button>
+                <button type="button" data-keycode="3" title="主页" aria-label="主页">&#9675;</button>
+                <button type="button" data-keycode="187" title="最近任务" aria-label="最近任务">&#9633;</button>
+            </nav>
+          </div>
+
+          <aside class="device-panel" aria-label="当前设备信息与工具">
+              <div class="top-actions">
+                  <button type="button" id="open-devices" class="tool-button" title="选择设备" aria-label="选择设备"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg><span>设备</span></button>
+                  <button type="button" id="open-files" class="tool-button" title="文件管理器" aria-label="文件管理器"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2Z"/></svg><span>文件</span></button>
+                  <button type="button" id="reconnect" class="tool-button reconnect" title="重新连接" aria-label="重新连接"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15 6.7L21 16"/><path d="M16 16h5v5"/></svg><span>重连</span></button>
+              </div>
+              <div class="panel-divider"></div>
+              <div class="tool-rail" aria-label="设备工具">
+                  <button type="button" id="take-screenshot" title="截图" aria-label="截图"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg><span>截图</span></button>
+                  <button type="button" id="toggle-recording" title="开始录屏" aria-label="开始录屏"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"/></svg><span>录屏</span></button>
+                  <button type="button" id="open-clipboard" title="剪贴板与输入" aria-label="剪贴板与输入"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg><span>输入</span></button>
+                  <button type="button" id="quick-rotate" title="旋转屏幕" aria-label="旋转屏幕"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15 6.7L21 16"/><path d="M16 16h5v5"/></svg><span>旋转</span></button>
+                  <button type="button" id="open-tools" title="设备设置" aria-label="设备设置"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span>设置</span></button>
+                  <button type="button" id="open-workbench" class="terminal-glyph" title="调试工作台" aria-label="调试工作台"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 17 6-6-6-6M12 19h8"/></svg><span>调试</span></button>
+              </div>
+          </aside>
+        </div>
+    </main>
+
+    <dialog id="device-picker" class="device-picker">
+        <div class="device-picker-layout">
+            <header class="device-picker-header">
+                <div>
+                    <strong>选择设备</strong>
+                    <span id="selected-device-label">未连接</span>
+                </div>
+                <div class="device-picker-actions">
+                    <button type="button" id="refresh-devices" class="icon-button" title="刷新设备" aria-label="刷新设备">&#8635;</button>
+                    <button type="button" id="close-devices" class="icon-button" title="关闭" aria-label="关闭">&#10005;</button>
+                </div>
+            </header>
+            <div class="device-picker-content">
+                <section class="device-group">
+                    <h2>USB</h2>
+                    <div id="usb-device-list" class="connection-device-list"></div>
+                </section>
+                <section class="device-group">
+                    <h2>模拟器</h2>
+                    <div id="emulator-device-list" class="connection-device-list"></div>
+                </section>
+                <section class="device-group">
+                    <h2>网络</h2>
+                    <div id="network-device-list" class="connection-device-list"></div>
+                </section>
+                <form id="adb-connect-form" class="adb-connect-form">
+                    <label for="adb-address">通过 ADB 地址连接</label>
+                    <div class="adb-connect-controls">
+                        <input id="adb-address" type="text" placeholder="127.0.0.1:5555" aria-describedby="adb-connect-hint" autocomplete="off" spellcheck="false" required>
+                        <button type="submit" class="device-row-command primary">连接</button>
+                    </div>
+                    <span id="adb-connect-hint">输入模拟器或设备的 IP:端口；本机模拟器会自动发现。</span>
+                </form>
+            </div>
+            <footer class="device-picker-footer">
+                <span id="device-picker-status" role="status" aria-live="polite">正在扫描设备</span>
+                <button type="button" id="disconnect-device" class="disconnect-device" hidden>断开当前设备</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <dialog id="file-manager" class="file-manager">
+        <div class="file-manager-layout">
+            <header class="file-header">
+                <div>
+                    <strong>文件管理器</strong>
+                    <span id="file-path">/sdcard</span>
+                </div>
+                <button type="button" id="close-files" class="icon-button" title="关闭" aria-label="关闭">&#10005;</button>
+            </header>
+            <nav class="file-toolbar" aria-label="文件操作">
+                <button type="button" id="file-up" class="icon-button" title="返回上级" aria-label="返回上级">&#8593;</button>
+                <button type="button" id="file-refresh" class="icon-button" title="刷新" aria-label="刷新">&#8635;</button>
+                <button type="button" id="file-mkdir" class="icon-button" title="新建文件夹" aria-label="新建文件夹">&#128193;<span>+</span></button>
+                <button type="button" id="file-upload" class="icon-button" title="上传文件" aria-label="上传文件">&#8679;</button>
+                <button type="button" id="apk-picker" class="text-button" title="选择并安装 APK">安装 APK</button>
+            </nav>
+            <div class="file-list-head" aria-hidden="true">
+                <span>名称</span><span>大小</span><span>修改时间</span><span>操作</span>
+            </div>
+            <div id="file-list" class="file-list" role="list"></div>
+            <footer class="file-footer">
+                <span id="file-status" role="status" aria-live="polite">就绪</span>
+                <progress id="file-progress" max="100" value="0" hidden></progress>
+            </footer>
+        </div>
+    </dialog>
+
+    <dialog id="device-tools" class="device-tools">
+        <div class="tools-layout">
+            <header class="tools-header">
+                <strong>设备工具</strong>
+                <button type="button" id="close-tools" class="icon-button" title="关闭" aria-label="关闭">&#10005;</button>
+            </header>
+            <nav class="tools-tabs" aria-label="设备工具分类">
+                <button type="button" class="active" data-tool-tab="clipboard">输入</button>
+                <button type="button" data-tool-tab="display">显示</button>
+                <button type="button" data-tool-tab="network">网络</button>
+                <button type="button" data-tool-tab="simulation">模拟</button>
+            </nav>
+
+            <div class="tools-content">
+                <section class="tool-panel active" data-tool-panel="clipboard">
+                    <label class="field wide-field">
+                        <span>文本与剪贴板</span>
+                        <textarea id="clipboard-text" maxlength="200000" rows="8"></textarea>
+                    </label>
+                    <div class="command-row">
+                        <button type="button" id="paste-device" class="primary-command">粘贴到设备</button>
+                        <button type="button" id="read-computer">读取电脑剪贴板</button>
+                        <button type="button" id="read-device-clipboard">读取设备剪贴板</button>
+                        <button type="button" id="copy-computer">复制到电脑</button>
+                    </div>
+                </section>
+
+                <section class="tool-panel" data-tool-panel="display">
+                    <div class="form-grid three-columns">
+                        <label class="field"><span>宽度</span><input id="display-width" type="number" min="320" max="2160" step="1"></label>
+                        <label class="field"><span>高度</span><input id="display-height" type="number" min="320" max="3840" step="1"></label>
+                        <label class="field"><span>DPI</span><input id="display-density" type="number" min="120" max="640" step="1"></label>
+                    </div>
+                    <div class="command-row">
+                        <button type="button" id="apply-display" class="primary-command">应用显示设置</button>
+                        <button type="button" id="reset-display">恢复默认</button>
+                    </div>
+                    <div class="setting-line">
+                        <span>屏幕方向</span>
+                        <div class="segmented" role="group" aria-label="屏幕方向">
+                            <button type="button" data-rotation="0">竖屏</button>
+                            <button type="button" data-rotation="1">横屏</button>
+                            <button type="button" data-rotation="auto">自动</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tool-panel" data-tool-panel="network">
+                    <div class="network-summary">
+                        <span id="network-state">正在读取</span>
+                        <span id="network-address">-</span>
+                        <label class="switch-control"><input id="wifi-enabled" type="checkbox"><span>Wi-Fi</span></label>
+                    </div>
+                    <div class="form-grid proxy-grid">
+                        <label class="field"><span>代理主机</span><input id="proxy-host" type="text" maxlength="253" placeholder="127.0.0.1"></label>
+                        <label class="field compact-field"><span>端口</span><input id="proxy-port" type="number" min="1" max="65535" placeholder="8080"></label>
+                    </div>
+                    <div class="command-row">
+                        <button type="button" id="apply-proxy" class="primary-command">应用代理</button>
+                        <button type="button" id="clear-proxy">清除代理</button>
+                    </div>
+                    <label class="field wide-field">
+                        <span>私人 DNS 主机</span>
+                        <input id="dns-host" type="text" maxlength="253" placeholder="dns.google">
+                    </label>
+                    <div class="command-row">
+                        <button type="button" id="apply-dns" class="primary-command">应用私人 DNS</button>
+                        <button type="button" id="automatic-dns">自动 DNS</button>
+                    </div>
+                </section>
+
+                <section class="tool-panel" data-tool-panel="simulation">
+                    <div class="form-grid three-columns">
+                        <label class="field"><span>纬度</span><input id="mock-latitude" type="number" min="-90" max="90" step="0.000001" value="31.230416"></label>
+                        <label class="field"><span>经度</span><input id="mock-longitude" type="number" min="-180" max="180" step="0.000001" value="121.473701"></label>
+                        <label class="field"><span>精度（米）</span><input id="mock-accuracy" type="number" min="1" max="1000" step="1" value="5"></label>
+                    </div>
+                    <div class="command-row">
+                        <button type="button" id="apply-location" class="primary-command">应用位置</button>
+                        <button type="button" id="reset-location">恢复真实位置</button>
+                    </div>
+                    <div class="battery-controls">
+                        <label class="field battery-level"><span>电量</span><input id="battery-level" type="range" min="0" max="100" value="100"><output id="battery-output">100%</output></label>
+                        <label class="switch-control"><input id="battery-charging" type="checkbox" checked><span>充电</span></label>
+                    </div>
+                    <div class="command-row">
+                        <button type="button" id="apply-battery" class="primary-command">应用电池状态</button>
+                        <button type="button" id="reset-battery">恢复电池</button>
+                    </div>
+                </section>
+            </div>
+            <footer class="tools-footer"><span id="tools-status" role="status" aria-live="polite">就绪</span></footer>
+        </div>
+    </dialog>
+
+    <dialog id="workbench" class="workbench">
+        <div class="workbench-layout">
+            <header class="tools-header">
+                <strong>调试工作台</strong>
+                <button type="button" id="close-workbench" class="icon-button" title="关闭" aria-label="关闭">&#10005;</button>
+            </header>
+            <nav class="workbench-tabs" aria-label="调试工具分类">
+                <button type="button" class="active" data-workbench-tab="apps">应用</button>
+                <button type="button" data-workbench-tab="shell">终端</button>
+                <button type="button" data-workbench-tab="logcat">日志</button>
+                <button type="button" data-workbench-tab="diagnostics">网络</button>
+                <button type="button" data-workbench-tab="forwards">转发</button>
+            </nav>
+
+            <div class="workbench-content">
+                <section class="workbench-panel active" data-workbench-panel="apps">
+                    <div class="workbench-toolbar">
+                        <input id="app-search" type="search" placeholder="筛选包名" aria-label="筛选应用">
+                        <select id="app-scope" aria-label="应用范围">
+                            <option value="user">用户应用</option>
+                            <option value="system">系统应用</option>
+                        </select>
+                        <button type="button" id="refresh-apps">刷新</button>
+                    </div>
+                    <div class="app-workspace">
+                        <div class="app-list-region">
+                            <div class="app-list-head"><span>包名</span><span>状态</span><span>操作</span></div>
+                            <div id="app-list" class="app-list" role="list"></div>
+                        </div>
+                        <aside id="app-details" class="app-details">
+                            <strong>应用详情</strong>
+                            <p>选择应用查看版本和权限。</p>
+                        </aside>
+                    </div>
+                </section>
+
+                <section class="workbench-panel" data-workbench-panel="shell">
+                    <div class="workbench-toolbar shell-toolbar">
+                        <select id="shell-preset" aria-label="常用命令">
+                            <option value="">常用命令</option>
+                            <option value="getprop">系统属性</option>
+                            <option value="df -h">磁盘占用</option>
+                            <option value="ip addr; ip route show table 1016">网络状态</option>
+                            <option value="pm list packages -3">用户应用</option>
+                            <option value="dumpsys activity activities | head -n 80">当前活动</option>
+                            <option value="top -b -n 1 | head -n 30">进程占用</option>
+                        </select>
+                        <select id="shell-history" aria-label="命令历史"><option value="">历史记录</option></select>
+                        <button type="button" id="clear-shell-output">清空输出</button>
+                    </div>
+                    <label class="field shell-command-field">
+                        <span>ADB Shell 命令</span>
+                        <textarea id="shell-command" rows="3" maxlength="4000" spellcheck="false" placeholder="输入 Android Shell 命令"></textarea>
+                    </label>
+                    <div class="command-row">
+                        <button type="button" id="run-shell" class="primary-command">执行</button>
+                        <span id="shell-status" class="inline-status">就绪</span>
+                    </div>
+                    <pre id="shell-output" class="console-output" tabindex="0"></pre>
+                </section>
+
+                <section class="workbench-panel" data-workbench-panel="logcat">
+                    <div class="workbench-toolbar logcat-toolbar">
+                        <input id="logcat-package" type="text" placeholder="包名（可选）" aria-label="日志应用包名">
+                        <select id="logcat-level" aria-label="最低日志级别">
+                            <option value="V">全部</option><option value="D">调试</option><option value="I">信息</option>
+                            <option value="W">警告</option><option value="E">错误</option><option value="F">严重</option>
+                        </select>
+                        <select id="logcat-lines" aria-label="日志行数">
+                            <option value="200">200 行</option><option value="500" selected>500 行</option><option value="1000">1000 行</option>
+                        </select>
+                        <input id="logcat-search" type="search" placeholder="关键词" aria-label="日志关键词">
+                    </div>
+                    <div class="command-row logcat-actions">
+                        <button type="button" id="refresh-logcat" class="primary-command">刷新</button>
+                        <label class="switch-control"><input id="auto-logcat" type="checkbox"><span>自动刷新</span></label>
+                        <button type="button" id="clear-logcat">清空设备日志</button>
+                        <button type="button" id="download-logcat">下载</button>
+                        <span id="logcat-status" class="inline-status">就绪</span>
+                    </div>
+                    <pre id="logcat-output" class="console-output tall-console" tabindex="0"></pre>
+                </section>
+
+                <section class="workbench-panel" data-workbench-panel="diagnostics">
+                    <div class="diagnostics-grid">
+                        <div>
+                            <div class="workbench-toolbar diagnostic-controls">
+                                <input id="diagnostic-target" type="text" value="192.168.0.28" placeholder="IP 或域名" aria-label="诊断目标">
+                                <input id="diagnostic-port" type="number" value="22" min="1" max="65535" aria-label="端口">
+                            </div>
+                            <div class="command-row">
+                                <button type="button" data-diagnostic="ping" class="primary-command">Ping</button>
+                                <button type="button" data-diagnostic="dns">DNS</button>
+                                <button type="button" data-diagnostic="port">测试端口</button>
+                                <button type="button" data-diagnostic="route">查看路由</button>
+                            </div>
+                            <pre id="diagnostic-output" class="console-output diagnostic-output" tabindex="0"></pre>
+                        </div>
+                        <div>
+                            <div class="section-heading"><strong>设备网络</strong><button type="button" id="refresh-network-overview">刷新</button></div>
+                            <pre id="network-overview" class="console-output diagnostic-output" tabindex="0"></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="workbench-panel" data-workbench-panel="forwards">
+                    <div class="forward-summary">
+                        <div class="segmented" role="group" aria-label="转发方向">
+                            <button type="button" class="active" data-forward-direction="forward">正向</button>
+                            <button type="button" data-forward-direction="reverse">反向</button>
+                        </div>
+                        <span id="forward-description">控制容器端口连接到 Android 端口</span>
+                    </div>
+                    <div class="workbench-toolbar forward-controls">
+                        <label class="field"><span>本地端口</span><input id="forward-local-port" type="number" min="1" max="65535" value="8080"></label>
+                        <label class="field"><span>目标端口</span><input id="forward-remote-port" type="number" min="1" max="65535" value="8080"></label>
+                        <button type="button" id="add-forward" class="primary-command">添加转发</button>
+                        <button type="button" id="refresh-forwards">刷新</button>
+                    </div>
+                    <div class="forward-list-head"><span>方向</span><span>本地端口</span><span>目标端口</span><span>操作</span></div>
+                    <div id="forward-list" class="forward-list" role="list"></div>
+                </section>
+            </div>
+            <footer class="tools-footer"><span id="workbench-status" role="status" aria-live="polite">就绪</span></footer>
+        </div>
+    </dialog>
+
+    <div id="drop-overlay" class="drop-overlay" aria-hidden="true">
+        <strong>释放以安装 APK</strong>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <textarea id="keyboard-capture" class="keyboard-capture" tabindex="-1" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="键盘输入"></textarea>
+    <input id="file-input" type="file" multiple hidden>
+    <input id="apk-input" type="file" accept=".apk,application/vnd.android.package-archive" multiple hidden>
+
+    <script src="jmuxer.min.js"></script>
+    <script src="control.js"></script>
+</body>
+</html>

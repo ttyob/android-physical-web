@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>iPhone 设备控制</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="control.css">
+    <link rel="stylesheet" href="ios.css">
+</head>
+<body>
+    <main class="workspace ios-workspace">
+        <div class="device-stage">
+            <div class="phone-shell">
+                <header class="device-local-header">
+                    <div class="device-local-title">
+                        <strong id="device-name">iPhone</strong>
+                        <code id="device-key" title="设备 UDID">--</code>
+                        <button type="button" id="rename-device" title="修改显示名称">修改</button>
+                        <button type="button" id="close-device" title="关闭设备" aria-label="关闭设备"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="device-local-status">
+                        <span id="connection-status" role="status">正在连接</span>
+                        <span id="control-state" class="video-state">画面未连接</span>
+                    </div>
+                </header>
+                <div id="control-screen" class="screen-frame control-screen" tabindex="0" aria-label="iPhone 屏幕">
+                    <img id="control-image" alt="iPhone 实时画面，支持点击和拖动" draggable="false" hidden>
+                    <canvas id="control-canvas" aria-label="iPhone 实时画面，支持点击和拖动" hidden></canvas>
+                    <canvas id="control-frozen-canvas" aria-label="已固定的 iPhone 锁屏画面，点击仍发送到手机" hidden></canvas>
+                    <div id="control-pinned-notice" class="pinned-notice" role="status" hidden>画面已固定，点击仍发送到手机<br>输入完成后点击右侧“恢复”</div>
+                    <div id="control-placeholder" class="screen-placeholder">
+                        <svg class="phone-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M10 18h4"/></svg>
+                        <strong id="placeholder-message">iPhone 画面</strong>
+                        <span>连接后可点击、长按和滑动操作</span>
+                        <button type="button" id="connect-control" class="primary" disabled>连接画面</button>
+                        <button type="button" class="text-link" data-open-tool="settings">连接设置</button>
+                    </div>
+                </div>
+                <nav class="bottom-controls" aria-label="iPhone 常用操作">
+                    <button type="button" id="control-wake" title="唤醒屏幕" aria-label="唤醒屏幕" disabled><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10M6.3 5.7a8 8 0 1 0 11.4 0"/></svg></button>
+                    <button type="button" id="control-home" title="主屏幕" aria-label="主屏幕" disabled>○</button>
+                    <button type="button" id="resize-control" title="刷新画面与尺寸" aria-label="刷新画面与尺寸" disabled><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7a9 9 0 1 0 1 9M20 3v5h-5"/></svg></button>
+                </nav>
+                <p id="control-note" class="screen-status" role="status">正在检查控制组件</p>
+            </div>
+            <aside class="device-panel" aria-label="iPhone 设备工具">
+                <div class="top-actions">
+                    <button type="button" id="reconnect-control" class="tool-button" title="连接或重新连接画面" aria-label="重新连接画面" disabled><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8M3 3v5h5M3 12a9 9 0 0 0 15 6.7L21 16M16 16h5v5"/></svg><span id="connect-label">连接</span></button>
+                </div>
+                <div class="panel-divider"></div>
+                <div class="tool-rail">
+                    <button type="button" data-open-tool="screenshot" title="屏幕截图" aria-label="屏幕截图"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3Z"/><circle cx="12" cy="13" r="3"/></svg><span>截图</span></button>
+                    <button type="button" data-open-tool="input" title="文字输入" aria-label="文字输入"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg><span>输入</span></button>
+                    <button type="button" id="control-pin-mode" aria-pressed="false" title="锁屏输入：固定当前密码键盘，点击仍发送到手机" aria-label="进入锁屏输入模式" disabled><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4M12 14v4"/></svg><span id="control-pin-label">密码</span></button>
+                    <button type="button" data-open-tool="apps" title="应用管理" aria-label="应用管理"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>应用</span></button>
+                    <button type="button" data-open-tool="logs" title="系统日志" aria-label="系统日志"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 7 5 5-5 5M12 19h8"/></svg><span>日志</span></button>
+                    <button type="button" data-open-tool="info" title="设备信息" aria-label="设备信息"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg><span>信息</span></button>
+                    <button type="button" data-open-tool="settings" title="连接设置" aria-label="连接设置"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span>设置</span></button>
+                </div>
+            </aside>
+        </div>
+    </main>
+    <dialog id="ios-tools" class="workbench ios-tools" aria-labelledby="tools-title">
+        <div class="workbench-layout">
+            <header class="tools-header">
+                <strong id="tools-title">iPhone 设备工具</strong>
+                <button type="button" id="close-tools" class="icon-button" title="关闭工具" aria-label="关闭工具">×</button>
+            </header>
+            <nav class="workbench-tabs" role="tablist" aria-label="设备工具分类">
+                <button type="button" id="tab-info" role="tab" aria-selected="true" aria-controls="panel-info" data-tab="info" class="active">信息</button>
+                <button type="button" id="tab-apps" role="tab" aria-selected="false" aria-controls="panel-apps" tabindex="-1" data-tab="apps">应用</button>
+                <button type="button" id="tab-logs" role="tab" aria-selected="false" aria-controls="panel-logs" tabindex="-1" data-tab="logs">日志</button>
+                <button type="button" id="tab-screenshot" role="tab" aria-selected="false" aria-controls="panel-screenshot" tabindex="-1" data-tab="screenshot">截图</button>
+                <button type="button" id="tab-input" role="tab" aria-selected="false" aria-controls="panel-input" tabindex="-1" data-tab="input">输入</button>
+                <button type="button" id="tab-settings" role="tab" aria-selected="false" aria-controls="panel-settings" tabindex="-1" data-tab="settings">设置</button>
+            </nav>
+            <div class="workbench-content">
+                <section id="panel-info" class="tool-panel" role="tabpanel" aria-labelledby="tab-info" data-panel="info" tabindex="0">
+                    <div class="toolbar"><button type="button" id="refresh-device">刷新信息</button><button type="button" id="pair-device">配对 / 重试信任</button></div>
+                    <dl id="device-info" class="info-list"></dl>
+                    <p class="tool-note">首次连接请解锁 iPhone，并在手机上选择“信任此电脑”。</p>
+                </section>
+                <section id="panel-apps" class="tool-panel" role="tabpanel" aria-labelledby="tab-apps" data-panel="apps" tabindex="0" hidden>
+                    <div class="toolbar"><button type="button" id="install-app" class="primary" disabled>安装 IPA</button><button type="button" id="refresh-apps" disabled>刷新</button><span id="app-count" class="inline-status"></span></div>
+                    <input id="app-search" type="search" placeholder="搜索应用名或 Bundle ID" aria-label="搜索应用">
+                    <p class="tool-note">列出用户应用；安装包需使用适用于当前 iPhone 的签名。</p>
+                    <div id="app-list" class="item-list" role="list"></div>
+                </section>
+                <section id="panel-logs" class="tool-panel" role="tabpanel" aria-labelledby="tab-logs" data-panel="logs" tabindex="0" hidden>
+                    <div class="toolbar"><input id="log-search" type="search" maxlength="200" placeholder="日志关键词" aria-label="日志关键词"><select id="log-duration" aria-label="每段采集时间"><option value="1000">1 秒</option><option value="3000" selected>3 秒</option><option value="5000">5 秒</option><option value="10000">10 秒</option></select><button type="button" id="capture-logs" class="primary" disabled>采集</button></div>
+                    <div class="toolbar"><label class="checkbox-label"><input id="auto-logs" type="checkbox">连续采集</label><button type="button" id="clear-logs">清空</button><button type="button" id="download-logs">下载</button></div>
+                    <pre id="log-output" class="console" tabindex="0" aria-label="系统日志输出"></pre>
+                </section>
+                <section id="panel-screenshot" class="tool-panel" role="tabpanel" aria-labelledby="tab-screenshot" data-panel="screenshot" tabindex="0" hidden>
+                    <div class="toolbar"><button type="button" id="capture-screenshot" class="primary" disabled>截取屏幕</button><a id="download-screenshot" class="download-link" hidden>下载截图</a></div>
+                    <p id="screenshot-note" class="tool-note">连接画面后可截取当前屏幕</p>
+                    <div class="screenshot-preview"><img id="screenshot-image" alt="iPhone 截图预览" hidden></div>
+                </section>
+                <section id="panel-input" class="tool-panel" role="tabpanel" aria-labelledby="tab-input" data-panel="input" tabindex="0" hidden>
+                    <label class="field"><span>发送文字到手机</span><textarea id="control-text" rows="7" maxlength="2000" placeholder="先关闭此窗口并点击手机输入框，再填写文字" aria-label="发送到 iPhone 的文字" autocomplete="off" spellcheck="false"></textarea></label>
+                    <div class="toolbar"><button type="button" id="send-control-text" class="primary" disabled>发送文字</button></div>
+                    <p class="tool-note">支持多行文字，按 Ctrl / ⌘ + Enter 发送。锁屏密码请先用右侧“密码”工具固定密码键盘，再点击画面输入。</p>
+                </section>
+                <section id="panel-settings" class="tool-panel" role="tabpanel" aria-labelledby="tab-settings" data-panel="settings" tabindex="0" hidden>
+                    <div class="setting-card">
+                        <h2>画面连接</h2>
+                        <div class="toolbar"><label for="control-format">显示方式</label><select id="control-format"><option value="auto">自动（优先 H.264）</option><option value="mjpeg">MJPEG</option><option value="frame">逐帧截图</option></select><button type="button" id="disconnect-control" disabled>断开画面</button></div>
+                        <p class="tool-note">关闭工具窗口即可继续操作手机；重连和刷新画面在右侧及底部工具栏。</p>
+                    </div>
+                    <div id="control-lock-note" class="setting-card lockscreen-help">
+                        <h2>锁屏密码输入</h2>
+                        <p class="tool-note">如果输入第一位后键盘从网页消失，请先取消本次输入、重新调出密码键盘，再点击右侧“密码”。此时画面固定，点击仍发送到手机，密码圆点不会实时更新。输入完成点“恢复”查看结果。手机布局发生变化时，请先恢复实时画面；也可在手机上完成解锁。</p>
+                    </div>
+                    <details id="control-setup" class="control-setup">
+                        <summary>首次安装与连接帮助</summary>
+                        <p class="tool-note">使用全能签等工具签名安装 DeviceKit，并从服务器启动测试服务。仅点击手机上的应用图标无法启动控制服务。</p>
+                        <a class="download-link" href="/ios-tools/devicekit-ios-runner-0.0.18-system-xctest-unsigned.ipa" download>下载 DeviceKit 0.0.18 未签名 IPA</a>
+                        <p id="control-component" class="tool-note">正在检查控制组件</p>
+                        <button type="button" id="check-control" disabled>检查安装状态</button>
+                    </details>
+                </section>
+            </div>
+            <footer id="tool-status" class="tools-footer" role="status" aria-live="polite">就绪</footer>
+        </div>
+    </dialog>
+    <div id="status-toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <input id="app-input" type="file" accept=".ipa" hidden>
+    <script src="ios-h264.js"></script>
+    <script src="ios-control.js"></script>
+    <script src="ios.js"></script>
+</body>
+</html>

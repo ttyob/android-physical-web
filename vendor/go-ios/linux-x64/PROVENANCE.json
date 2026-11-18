@@ -1,0 +1,6 @@
+{
+  "version": "1.3.2",
+  "source": "https://github.com/danielpaulus/go-ios/releases/download/v1.3.2/go-ios-linux.zip",
+  "upstreamDigest": "sha256:a55fdb4c507391c0548252e01d1deb6ae3c7fd99cfbce842c6f80569cc125604",
+  "member": "ios-amd64"
+}

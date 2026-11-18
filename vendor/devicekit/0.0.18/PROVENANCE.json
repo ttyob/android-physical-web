@@ -1,0 +1,30 @@
+{
+  "project": "https://github.com/mobile-next/devicekit-ios",
+  "version": "0.0.18",
+  "release": "https://github.com/mobile-next/devicekit-ios/releases/tag/0.0.18",
+  "artifact": {
+    "file": "devicekit-ios-runner-0.0.18.ipa",
+    "url": "https://github.com/mobile-next/devicekit-ios/releases/download/0.0.18/devicekit-ios-runner.ipa",
+    "mirror": "https://deviceboxhq.com/devicekit-ios-runner-0.0.18.ipa",
+    "sha256": "45457d3f11de2b5370b14ba45e6c8502328e28825ee8222e8517245898a4c57f",
+    "upstreamDigest": "sha256:45457d3f11de2b5370b14ba45e6c8502328e28825ee8222e8517245898a4c57f",
+    "size": 8920427
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "url": "https://raw.githubusercontent.com/mobile-next/devicekit-ios/0.0.18/LICENSE"
+  },
+  "originalBundleId": "com.mobilenext.devicekit-iosUITests.xctrunner",
+  "testPlugin": "devicekit-iosUITests.xctest",
+  "signingMaterialIncluded": false,
+  "preparedArtifact": {
+    "file": "devicekit-ios-runner-0.0.18-system-xctest-unsigned.ipa",
+    "sha256": "9d01f5ebd7a03f4a834929d30d6f48def9abd357b004ca18c8516d2228f98e25",
+    "script": "../prepare-system-xctest.py",
+    "changes": [
+      "Remove app-root embedded Apple XCTest frameworks and libXCTestSwiftSupport.dylib so the mounted developer image supplies the matching runtime.",
+      "Remove _CodeSignature directories; signing is a separate step."
+    ],
+    "executablesModified": false
+  }
+}

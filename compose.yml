@@ -1,0 +1,26 @@
+services:
+  physical-web:
+    build:
+      context: .
+    image: "${PHYSICAL_WEB_IMAGE:-ghcr.io/ttyob/android-physical-web:v1.0.0}"
+    container_name: android-physical-web
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      GATEWAY_PORT: "${SCRCPY_PORT:-8000}"
+      HAP_BRIDGE_PORT: "${HAP_BRIDGE_PORT:-8090}"
+      ANDROID_ADB_SERVER_PORT: "${ADB_SERVER_PORT:-5038}"
+      EMULATOR_ADB_SERVER_PORT: "${EMULATOR_ADB_SERVER_PORT:-5037}"
+      HDC_ENABLED: "${HDC_ENABLED:-true}"
+      IOS_ENABLED: "${IOS_ENABLED:-true}"
+    volumes:
+      - ./data:/data
+      - ./adb-keys:/root/.android
+      - ./hdc-keys:/root/.harmony
+      - ./ios-pairing:/var/lib/lockdown
+      - /dev/bus/usb:/dev/bus/usb
+      - /run/udev:/run/udev:ro
+    device_cgroup_rules:
+      - "c 189:* rmw"
+    mem_limit: "${SCRCPY_MEMORY_LIMIT:-1g}"
+    cpus: "${SCRCPY_CPU_LIMIT:-1.0}"

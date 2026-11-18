@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>鸿蒙设备管理</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="hdc.css">
+</head>
+<body>
+    <main class="hdc-workspace">
+        <header class="device-header">
+            <div class="identity">
+                <span class="platform">HarmonyOS · HDC</span>
+                <strong id="device-name">鸿蒙设备</strong>
+                <code id="device-key">--</code>
+            </div>
+            <div class="header-actions">
+                <button type="button" id="rename-device" title="修改显示名称">修改</button>
+                <button type="button" id="refresh-device" title="刷新连接状态">刷新</button>
+                <button type="button" id="close-device" title="关闭设备" aria-label="关闭设备">×</button>
+            </div>
+            <span id="connection-status" class="connection-status" role="status">正在连接</span>
+        </header>
+        <p id="stream-mode" class="capability-note">正在检测 HAP 视频流；不可用时会自动使用设备截图。</p>
+        <nav class="tabs" role="tablist" aria-label="鸿蒙设备工具">
+            <button type="button" id="tab-screen" role="tab" aria-selected="true" aria-controls="panel-screen" data-tab="screen">画面</button>
+            <button type="button" id="tab-files" role="tab" aria-selected="false" aria-controls="panel-files" data-tab="files">文件</button>
+            <button type="button" id="tab-shell" role="tab" aria-selected="false" aria-controls="panel-shell" data-tab="shell">Shell</button>
+            <button type="button" id="tab-logs" role="tab" aria-selected="false" aria-controls="panel-logs" data-tab="logs">HiLog</button>
+            <button type="button" id="tab-apps" role="tab" aria-selected="false" aria-controls="panel-apps" data-tab="apps">应用</button>
+        </nav>
+        <section id="panel-screen" class="tool-panel screen-panel" role="tabpanel" aria-labelledby="tab-screen" data-panel="screen">
+            <div class="screen-stage">
+                <img id="device-screen" alt="鸿蒙设备实时画面" draggable="false">
+                <canvas id="device-screen-canvas" aria-label="鸿蒙设备实时视频" hidden></canvas>
+                <div id="screen-placeholder" class="screen-placeholder">点击“连接画面”开始预览</div>
+            </div>
+            <div class="screen-controls">
+                <button type="button" id="connect-screen" class="primary">连接画面</button>
+                <button type="button" id="screen-home">主屏幕</button>
+                <button type="button" id="screen-back">返回</button>
+                <button type="button" id="screen-refresh">刷新</button>
+            </div>
+            <form id="text-form" class="text-form">
+                <input id="input-text" type="text" maxlength="1024" placeholder="在设备当前输入框输入文字">
+                <button type="submit">发送文字</button>
+            </form>
+            <p id="stream-note" class="stream-note">拖动画面可滑动，单击可点击；HAP 可用时优先使用实时视频，否则自动使用截图。</p>
+        </section>
+        <section id="panel-files" class="tool-panel" role="tabpanel" aria-labelledby="tab-files" data-panel="files" hidden>
+            <div class="toolbar">
+                <button type="button" id="file-up" aria-label="返回上级">上级</button>
+                <button type="button" id="refresh-files">刷新</button>
+                <button type="button" id="upload-file">上传</button>
+                <button type="button" id="mkdir">新建文件夹</button>
+            </div>
+            <code id="file-path" class="file-path">/data/local/tmp</code>
+            <div id="file-list" class="item-list" role="list"></div>
+        </section>
+        <section id="panel-shell" class="tool-panel" role="tabpanel" aria-labelledby="tab-shell" data-panel="shell" hidden>
+            <label for="shell-command">设备 Shell 命令</label>
+            <textarea id="shell-command" rows="3" spellcheck="false" placeholder="param get const.product.model"></textarea>
+            <div class="toolbar">
+                <button type="button" id="run-shell" class="primary">执行</button>
+                <button type="button" id="clear-shell">清空输出</button>
+            </div>
+            <pre id="shell-output" class="console" tabindex="0"></pre>
+        </section>
+        <section id="panel-logs" class="tool-panel" role="tabpanel" aria-labelledby="tab-logs" data-panel="logs" hidden>
+            <div class="toolbar">
+                <input id="log-search" type="search" placeholder="日志关键词" aria-label="日志关键词">
+                <select id="log-lines" aria-label="日志行数"><option value="200">200 行</option><option value="500" selected>500 行</option><option value="1000">1000 行</option></select>
+            </div>
+            <div class="toolbar">
+                <button type="button" id="refresh-logs" class="primary">刷新</button>
+                <label class="checkbox-label"><input id="auto-logs" type="checkbox">自动刷新</label>
+                <button type="button" id="download-logs">下载</button>
+            </div>
+            <pre id="log-output" class="console" tabindex="0"></pre>
+        </section>
+        <section id="panel-apps" class="tool-panel" role="tabpanel" aria-labelledby="tab-apps" data-panel="apps" hidden>
+            <div class="toolbar">
+                <button type="button" id="install-app" class="primary">安装 HAP / HSP</button>
+                <button type="button" id="refresh-apps">刷新</button>
+            </div>
+            <input id="app-search" type="search" placeholder="搜索应用包名" aria-label="搜索应用包名">
+            <div id="app-list" class="item-list" role="list"></div>
+        </section>
+        <footer id="tool-status" role="status" aria-live="polite">正在读取设备信息</footer>
+    </main>
+    <input id="file-input" type="file" multiple hidden>
+    <input id="app-input" type="file" accept=".hap,.hsp" multiple hidden>
+    <script src="hdc-h264.js"></script>
+    <script src="hdc.js"></script>
+</body>
+</html>

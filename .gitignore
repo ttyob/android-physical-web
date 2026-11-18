@@ -1,0 +1,10 @@
+adb-keys/*
+!adb-keys/.gitkeep
+data/*
+!data/.gitkeep
+hdc-keys/*
+!hdc-keys/.gitkeep
+ios-pairing/*
+!ios-pairing/.gitkeep
+.env
+.hvigor/

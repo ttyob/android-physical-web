@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>多设备控制</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <main class="workspace-shell">
+        <header class="workspace-toolbar">
+            <span id="device-summary">0 台设备</span>
+            <div class="dashboard-actions">
+                <button type="button" id="refresh-dashboard" class="refresh-button" title="刷新设备状态"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15 6.7L21 16"/><path d="M16 16h5v5"/></svg><span>刷新</span></button>
+                <button type="button" id="add-device" class="add-button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>添加设备</span></button>
+            </div>
+        </header>
+        <div id="device-grid" class="device-grid"></div>
+        <section id="empty-workspace" class="empty-workspace" hidden>
+            <strong>没有打开的设备</strong>
+            <button type="button" id="empty-add-device" class="add-button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>添加设备</span></button>
+        </section>
+    </main>
+
+    <dialog id="device-discovery" class="device-discovery" aria-labelledby="discovery-title" aria-describedby="discovery-summary">
+        <div class="discovery-layout">
+            <header class="discovery-header">
+                <div>
+                    <strong id="discovery-title">添加设备</strong>
+                    <span id="discovery-summary">选择设备类型，添加到工作台</span>
+                </div>
+                <div class="dialog-actions">
+                    <button type="button" id="refresh-discovery" class="refresh-button" title="刷新设备"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15 6.7L21 16"/><path d="M16 16h5v5"/></svg><span>刷新</span></button>
+                    <button type="button" id="close-discovery" class="icon-button" title="关闭" aria-label="关闭"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                </div>
+            </header>
+            <nav class="discovery-tabs" role="tablist" aria-label="设备类型">
+                <button type="button" id="discovery-tab-phone" class="discovery-tab" role="tab" aria-selected="true" aria-controls="discovery-panel-phone" data-discovery-tab="phone">
+                    <span><span class="tab-platform">Android </span>真机</span><span id="phone-tab-count" class="tab-count">0</span>
+                </button>
+                <button type="button" id="discovery-tab-emulator" class="discovery-tab" role="tab" aria-selected="false" aria-controls="discovery-panel-emulator" tabindex="-1" data-discovery-tab="emulator">
+                    <span><span class="tab-platform">Android </span>模拟器</span><span id="emulator-tab-count" class="tab-count">0</span>
+                </button>
+                <button type="button" id="discovery-tab-harmony" class="discovery-tab" role="tab" aria-selected="false" aria-controls="discovery-panel-harmony" tabindex="-1" data-discovery-tab="harmony">
+                    <span>鸿蒙<span class="tab-protocol"> HDC</span></span><span id="harmony-tab-count" class="tab-count">0</span>
+                </button>
+                <button type="button" id="discovery-tab-ios" class="discovery-tab" role="tab" aria-selected="false" aria-controls="discovery-panel-ios" tabindex="-1" data-discovery-tab="ios">
+                    <span>iPhone</span><span id="ios-tab-count" class="tab-count">0</span>
+                </button>
+            </nav>
+            <div class="discovery-content">
+                <p id="discovery-provider-error" class="discovery-provider-error" role="status" hidden></p>
+                <section id="discovery-panel-phone" class="discovery-panel" role="tabpanel" aria-labelledby="discovery-tab-phone" tabindex="0" data-discovery-panel="phone">
+                    <div class="panel-intro">
+                        <h2>连接 Android 真机</h2>
+                        <p>使用 USB 数据线或无线调试，授权后即可添加。</p>
+                    </div>
+                    <div id="phone-empty" class="discovery-empty" hidden>
+                        <svg class="empty-device-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 19h2"/></svg>
+                        <strong>暂未发现 Android 真机</strong>
+                        <span>连接手机并开启 USB 调试，或在手机上开启无线调试。</span>
+                    </div>
+                    <section id="usb-device-group" class="device-group">
+                        <h3>USB 连接</h3>
+                        <div id="usb-devices" class="device-list"></div>
+                    </section>
+                    <section id="network-device-group" class="device-group">
+                        <h3>无线连接</h3>
+                        <div id="network-devices" class="device-list"></div>
+                    </section>
+                    <details class="manual-connection">
+                        <summary><span>通过 IP 地址连接手机</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+                        <form id="adb-connect-form" class="adb-connect-form">
+                            <label for="adb-address">ADB 设备地址</label>
+                            <div class="adb-connect-controls">
+                                <input id="adb-address" type="text" placeholder="192.168.0.10:5555" aria-describedby="adb-connect-hint" autocomplete="off" spellcheck="false" required>
+                                <button type="submit" class="device-command primary">连接</button>
+                            </div>
+                            <span id="adb-connect-hint">填写手机的 IP:端口；Android 11 及以上可在无线列表中配对。</span>
+                        </form>
+                    </details>
+                </section>
+                <section id="discovery-panel-emulator" class="discovery-panel" role="tabpanel" aria-labelledby="discovery-tab-emulator" tabindex="0" data-discovery-panel="emulator" hidden>
+                    <div class="panel-intro">
+                        <h2>连接 Android 模拟器</h2>
+                        <p>启动模拟器后自动发现，也可通过地址连接其他主机上的模拟器。</p>
+                    </div>
+                    <div id="emulator-devices" class="device-list"></div>
+                    <details class="manual-connection">
+                        <summary><span>通过 ADB 地址连接模拟器</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+                        <form id="emulator-connect-form" class="adb-connect-form">
+                            <label for="emulator-address">模拟器地址</label>
+                            <div class="adb-connect-controls">
+                                <input id="emulator-address" type="text" placeholder="127.0.0.1:5555" aria-describedby="emulator-connect-hint" autocomplete="off" spellcheck="false" required>
+                                <button type="submit" class="device-command primary">连接</button>
+                            </div>
+                            <span id="emulator-connect-hint">填写开发服务器可访问的 IP:端口。</span>
+                        </form>
+                    </details>
+                </section>
+                <section id="discovery-panel-harmony" class="discovery-panel" role="tabpanel" aria-labelledby="discovery-tab-harmony" tabindex="0" data-discovery-panel="harmony" hidden>
+                    <div class="panel-intro">
+                        <h2>连接鸿蒙设备与模拟器</h2>
+                        <p>先填写 HDC 服务地址，再选择已连接的设备。</p>
+                    </div>
+                    <form id="hdc-server-form" class="adb-connect-form hdc-server-form">
+                        <label for="hdc-server-input">HDC 服务地址</label>
+                        <div class="adb-connect-controls">
+                            <input id="hdc-server-input" type="text" placeholder="主机 IP:端口" aria-describedby="hdc-server-hint" autocomplete="off" spellcheck="false" required>
+                            <button type="submit" class="device-command primary">连接服务</button>
+                        </div>
+                        <span id="hdc-server-hint">仅在当前页面使用，刷新后需重新填写。</span>
+                    </form>
+                    <div id="hdc-service" class="hdc-service" hidden>
+                        <div><span>当前 HDC 服务</span><code id="hdc-service-address"></code></div>
+                        <div class="service-actions">
+                            <span id="hdc-service-state" class="service-state"></span>
+                            <button type="button" id="disconnect-hdc-server" class="service-disconnect">断开</button>
+                        </div>
+                    </div>
+                    <div id="harmony-devices" class="device-list"></div>
+                    <details id="hdc-device-connection" class="manual-connection" hidden>
+                        <summary><span>通过 HDC 地址连接设备</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+                        <form id="hdc-connect-form" class="adb-connect-form">
+                            <label for="hdc-address">鸿蒙设备 / 模拟器地址</label>
+                            <div class="adb-connect-controls">
+                                <input id="hdc-address" type="text" placeholder="设备 IP:端口" aria-describedby="hdc-connect-hint" autocomplete="off" spellcheck="false" required>
+                                <button type="submit" class="device-command primary">连接</button>
+                            </div>
+                            <span id="hdc-connect-hint">设备地址由 HDC 服务所在主机访问。</span>
+                        </form>
+                    </details>
+                </section>
+                <section id="discovery-panel-ios" class="discovery-panel" role="tabpanel" aria-labelledby="discovery-tab-ios" tabindex="0" data-discovery-panel="ios" hidden>
+                    <div class="panel-intro">
+                        <h2>连接 iPhone 真机</h2>
+                        <p>用数据线连接到开发服务器，解锁手机并选择“信任此电脑”，然后点击配对或添加。</p>
+                    </div>
+                    <div id="ios-devices" class="device-list"></div>
+                    <div id="ios-service" class="hdc-service" hidden>
+                        <div><span>当前 usbmuxd 服务</span><code id="ios-service-address"></code></div>
+                        <div class="service-actions"><button type="button" id="disconnect-ios-server" class="service-disconnect">返回本机 USB</button></div>
+                    </div>
+                    <details id="ios-remote-connection" class="manual-connection">
+                        <summary><span>连接其他主机上的 iPhone</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+                        <form id="ios-server-form" class="adb-connect-form">
+                            <label for="ios-server-input">远程 usbmuxd 服务地址</label>
+                            <div class="adb-connect-controls">
+                                <input id="ios-server-input" type="text" placeholder="主机 IP:端口" aria-describedby="ios-server-hint" autocomplete="off" spellcheck="false" required>
+                                <button type="submit" class="device-command primary">连接服务</button>
+                            </div>
+                            <span id="ios-server-hint">需提供兼容 usbmuxd 协议的服务，并在手机端信任配对。地址仅用于当前页面。</span>
+                        </form>
+                    </details>
+                </section>
+            </div>
+            <footer class="discovery-footer">
+                <span id="discovery-status" class="discovery-status" role="status" aria-live="polite">正在查找设备</span>
+                <span class="auto-scan"><span aria-hidden="true"></span>自动扫描</span>
+            </footer>
+        </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script src="dashboard.js"></script>
+</body>
+</html>
