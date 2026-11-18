@@ -2,7 +2,7 @@ services:
   physical-web:
     build:
       context: .
-    image: "${PHYSICAL_WEB_IMAGE:-ghcr.io/ttyob/android-physical-web:v1.0.0}"
+    image: "${PHYSICAL_WEB_IMAGE:-ttyob/android-physical-web:v1.0.1}"
     container_name: android-physical-web
     restart: unless-stopped
     network_mode: host

@@ -13,7 +13,7 @@
 使用预构建镜像：
 
 ```bash
-docker pull ghcr.io/ttyob/android-physical-web:v1.0.0
+docker pull ttyob/android-physical-web:v1.0.1
 docker run -d \
   --name android-physical-web \
   --restart unless-stopped \
@@ -27,12 +27,12 @@ docker run -d \
   -v /dev/bus/usb:/dev/bus/usb \
   -v /run/udev:/run/udev:ro \
   --device-cgroup-rule='c 189:* rmw' \
-  ghcr.io/ttyob/android-physical-web:v1.0.0
+  ttyob/android-physical-web:v1.0.1
 ```
 
-Release 另提供 `android-physical-web-v1.0.0.tar.gz`，离线环境可执行
+Release 另提供 `android-physical-web-v1.0.1.tar.gz`，离线环境可执行
 `gzip -dc <文件> | docker load` 后按相同参数启动。仓库源码构建仍使用 `docker compose build`。
-Release 同时附带 `OHScrcpyServer-x86_64-v1.0.0.hap`，供受支持的 HarmonyOS x86_64 调试环境
+Release 同时附带 `OHScrcpyServer-x86_64-v1.0.1.hap`，供受支持的 HarmonyOS x86_64 调试环境
 尝试实时画面；未经适配的设备仍自动使用截图回退。
 
 ## 启动
